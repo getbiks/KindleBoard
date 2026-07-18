@@ -6,6 +6,7 @@ import os
 
 from widgets.weather import weather_text
 from widgets.qbittorrent import qbittorrent_text
+from widgets.crypto import crypto_text
 
 
 WIDTH = 800
@@ -39,13 +40,13 @@ def get_cpu_temp():
 def draw_card(draw, x, y, w, h, title):
 
     draw.rectangle(
-        (x, y, x+w, y+h),
+        (x, y, x + w, y + h),
         outline=0,
         width=2
     )
 
     draw.text(
-        (x+15, y+10),
+        (x + 15, y + 10),
         title,
         font=get_font(20),
         fill=0
@@ -69,13 +70,15 @@ def render_dashboard():
     text_font = get_font(18)
 
 
-    # Border
+
+    # Outer border
 
     draw.rectangle(
-        (5,5,WIDTH-5,HEIGHT-5),
+        (5, 5, WIDTH-5, HEIGHT-5),
         outline=0,
         width=2
     )
+
 
 
     # Header
@@ -83,7 +86,7 @@ def render_dashboard():
     now = datetime.now()
 
     draw.text(
-        (30,20),
+        (30, 20),
         now.strftime("%I:%M %p"),
         font=clock_font,
         fill=0
@@ -91,11 +94,12 @@ def render_dashboard():
 
 
     draw.text(
-        (35,90),
+        (35, 90),
         now.strftime("%A, %d %B %Y"),
         font=date_font,
         fill=0
     )
+
 
 
     # Cards
@@ -141,7 +145,9 @@ def render_dashboard():
 
 
 
+    # ----------------
     # BatCave Stats
+    # ----------------
 
     cpu = psutil.cpu_percent(interval=1)
 
@@ -149,7 +155,10 @@ def render_dashboard():
 
     disk = shutil.disk_usage("/")
 
-    disk_percent = disk.used / disk.total * 100
+    disk_percent = (
+        disk.used / disk.total
+    ) * 100
+
 
     temp = get_cpu_temp()
 
@@ -179,11 +188,11 @@ def render_dashboard():
 
     y = 200
 
-    for s in stats:
+    for item in stats:
 
         draw.text(
-            (55,y),
-            s,
+            (55, y),
+            item,
             font=text_font,
             fill=0
         )
@@ -192,17 +201,19 @@ def render_dashboard():
 
 
 
+    # ----------------
     # Weather
+    # ----------------
 
     weather = weather_text()
 
     y = 200
 
-    for line in weather.split("\n"):
+    for item in weather.split("\n"):
 
         draw.text(
-            (450,y),
-            line,
+            (450, y),
+            item,
             font=text_font,
             fill=0
         )
@@ -211,34 +222,49 @@ def render_dashboard():
 
 
 
+    # ----------------
     # qBittorrent
+    # ----------------
 
     qbit = qbittorrent_text()
 
     y = 410
 
-    for line in qbit.split("\n"):
+    for item in qbit.split("\n"):
 
         draw.text(
-            (55,y),
-            line,
+            (55, y),
+            item,
             font=text_font,
             fill=0
         )
 
-        y += 25
+        y += 24
 
 
 
-    # Crypto placeholder
+    # ----------------
+    # Crypto
+    # ----------------
 
-    draw.text(
-        (450,430),
-        "Coming soon...",
-        font=text_font,
-        fill=0
-    )
+    crypto = crypto_text()
 
+    y = 405
+
+    for item in crypto.split("\n"):
+
+        draw.text(
+            (450, y),
+            item,
+            font=text_font,
+            fill=0
+        )
+
+        y += 22
+
+
+
+    # Save image
 
     os.makedirs(
         "output",
