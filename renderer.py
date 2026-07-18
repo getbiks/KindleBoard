@@ -3,7 +3,9 @@ from datetime import datetime
 import psutil
 import shutil
 import os
+
 from widgets.weather import weather_text
+from widgets.qbittorrent import qbittorrent_text
 
 
 WIDTH = 800
@@ -17,6 +19,7 @@ def get_font(size):
 
 
 def get_cpu_temp():
+
     paths = [
         "/sys/class/thermal/thermal_zone0/temp",
         "/sys/class/hwmon/hwmon0/temp1_input"
@@ -25,27 +28,29 @@ def get_cpu_temp():
     for path in paths:
         try:
             with open(path) as f:
-                return float(f.read()) / 1000.0
+                return float(f.read()) / 1000
         except:
             pass
 
     return None
 
 
+
 def draw_card(draw, x, y, w, h, title):
 
     draw.rectangle(
-        (x, y, x + w, y + h),
+        (x, y, x+w, y+h),
         outline=0,
         width=2
     )
 
     draw.text(
-        (x + 15, y + 10),
+        (x+15, y+10),
         title,
         font=get_font(20),
         fill=0
     )
+
 
 
 def render_dashboard():
@@ -67,7 +72,7 @@ def render_dashboard():
     # Border
 
     draw.rectangle(
-        (5, 5, WIDTH - 5, HEIGHT - 5),
+        (5,5,WIDTH-5,HEIGHT-5),
         outline=0,
         width=2
     )
@@ -78,14 +83,15 @@ def render_dashboard():
     now = datetime.now()
 
     draw.text(
-        (30, 25),
+        (30,20),
         now.strftime("%I:%M %p"),
         font=clock_font,
         fill=0
     )
 
+
     draw.text(
-        (35, 95),
+        (35,90),
         now.strftime("%A, %d %B %Y"),
         font=date_font,
         fill=0
@@ -94,38 +100,56 @@ def render_dashboard():
 
     # Cards
 
-    card_y = 150
-
     draw_card(
         draw,
         30,
-        card_y,
+        150,
         350,
-        250,
+        170,
         "BatCave"
     )
+
 
     draw_card(
         draw,
         420,
-        card_y,
+        150,
         350,
-        250,
+        170,
         "Weather"
     )
+
+
+    draw_card(
+        draw,
+        30,
+        350,
+        350,
+        200,
+        "qBittorrent"
+    )
+
+
+    draw_card(
+        draw,
+        420,
+        350,
+        350,
+        200,
+        "Crypto"
+    )
+
 
 
     # BatCave Stats
 
     cpu = psutil.cpu_percent(interval=1)
 
-    load = os.getloadavg()[0]
-
     ram = psutil.virtual_memory().percent
 
     disk = shutil.disk_usage("/")
 
-    disk_percent = (disk.used / disk.total) * 100
+    disk_percent = disk.used / disk.total * 100
 
     temp = get_cpu_temp()
 
@@ -134,42 +158,51 @@ def render_dashboard():
         psutil.boot_time()
     )
 
-    days = uptime.days
-
-    hours, remainder = divmod(
-        uptime.seconds,
-        3600
-    )
-
-    minutes = remainder // 60
-
 
     stats = [
-        f"CPU      {cpu:.1f}%",
-        f"Load     {load:.2f}",
-        f"RAM      {ram:.1f}%",
-        f"Disk     {disk_percent:.1f}%"
+        f"CPU    {cpu:.1f}%",
+        f"RAM    {ram:.1f}%",
+        f"Disk   {disk_percent:.1f}%"
     ]
 
 
     if temp:
         stats.append(
-            f"Temp     {temp:.1f} C"
+            f"Temp   {temp:.1f} C"
         )
 
 
     stats.append(
-        f"Uptime   {days}d {hours}h {minutes}m"
+        f"Up     {uptime.days}d"
     )
 
 
-    y = card_y + 50
+    y = 200
 
-    for item in stats:
+    for s in stats:
 
         draw.text(
-            (50, y),
-            item,
+            (55,y),
+            s,
+            font=text_font,
+            fill=0
+        )
+
+        y += 22
+
+
+
+    # Weather
+
+    weather = weather_text()
+
+    y = 200
+
+    for line in weather.split("\n"):
+
+        draw.text(
+            (450,y),
+            line,
             font=text_font,
             fill=0
         )
@@ -178,25 +211,33 @@ def render_dashboard():
 
 
 
-    # Weather
+    # qBittorrent
 
-    weather = weather_text()
+    qbit = qbittorrent_text()
 
-    weather_lines = weather.split("\n")
+    y = 410
 
-    y = card_y + 60
-
-    for line in weather_lines:
+    for line in qbit.split("\n"):
 
         draw.text(
-            (450, y),
+            (55,y),
             line,
             font=text_font,
             fill=0
         )
 
-        y += 30
+        y += 25
 
+
+
+    # Crypto placeholder
+
+    draw.text(
+        (450,430),
+        "Coming soon...",
+        font=text_font,
+        fill=0
+    )
 
 
     os.makedirs(
