@@ -7,6 +7,10 @@ display:
   height: 600
   refresh_seconds: 60
 
+dashboard:
+  title: ""
+  device_name: "BatCave"
+
 clock:
   enabled: true
   format: "12"
@@ -29,4 +33,4 @@ qbittorrent:
   enabled: true
   url: "http://192.168.1.2:8181"
   username: "admin"
-  password: ""  
+  password: ""
