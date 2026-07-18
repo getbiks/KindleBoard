@@ -9,21 +9,24 @@ display:
 
 clock:
   enabled: true
+  format: "12"
 
-pi:
-  enabled: true
+location:
+  name: "Mira Road, Mumbai"
+  latitude: 19.2813
+  longitude: 72.8697
 
 weather:
   enabled: true
-  city: Mumbai
-  api_key: ""
 
 crypto:
   enabled: true
-  currency: INR
+  currencies:
+    - INR
+    - USD
 
 qbittorrent:
   enabled: true
-  url: http://192.168.1.2:8181
-  username: admin
-  password: ""
+  url: "http://192.168.1.2:8181"
+  username: "admin"
+  password: ""  
