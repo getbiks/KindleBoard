@@ -4,8 +4,15 @@ import psutil
 import shutil
 import os
 
+
 WIDTH = 800
 HEIGHT = 600
+
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+
+def get_font(size):
+    return ImageFont.truetype(FONT_PATH, size)
 
 
 def get_cpu_temp():
@@ -24,50 +31,170 @@ def get_cpu_temp():
     return None
 
 
+def draw_card(draw, x, y, w, h, title):
+    draw.rectangle(
+        (x, y, x + w, y + h),
+        outline=0,
+        width=2
+    )
+
+    draw.text(
+        (x + 15, y + 10),
+        title,
+        font=get_font(20),
+        fill=0
+    )
+
+
 def render_dashboard():
 
-    image = Image.new("L", (WIDTH, HEIGHT), 255)
+    image = Image.new(
+        "L",
+        (WIDTH, HEIGHT),
+        255
+    )
+
     draw = ImageDraw.Draw(image)
 
-    title_font = ImageFont.load_default()
-    text_font = ImageFont.load_default()
 
-    # Border
-    draw.rectangle((0, 0, WIDTH - 1, HEIGHT - 1), outline=0)
+    # Fonts
 
-    # Title
-    draw.text((20, 20), "KindleBoard", fill=0, font=title_font)
+    clock_font = get_font(56)
+    date_font = get_font(20)
+    text_font = get_font(18)
 
-    # Date
+
+    # Outer border
+
+    draw.rectangle(
+        (5, 5, WIDTH - 5, HEIGHT - 5),
+        outline=0,
+        width=2
+    )
+
+
+    # Header
+
     now = datetime.now()
-    draw.text((20, 45), now.strftime("%A, %d %B %Y"), fill=0, font=text_font)
 
-    # Time
-    draw.text((20, 75), now.strftime("%I:%M:%S %p"), fill=0, font=text_font)
+    draw.text(
+        (30, 25),
+        now.strftime("%I:%M %p"),
+        font=clock_font,
+        fill=0
+    )
 
-    cpu = psutil.cpu_percent(interval=0.1)
+    draw.text(
+        (35, 95),
+        now.strftime("%A, %d %B %Y"),
+        font=date_font,
+        fill=0
+    )
+
+
+    # Cards
+
+    card_y = 150
+
+    draw_card(
+        draw,
+        30,
+        card_y,
+        350,
+        250,
+        "BatCave"
+    )
+
+
+    draw_card(
+        draw,
+        420,
+        card_y,
+        350,
+        250,
+        "Weather"
+    )
+
+
+    # BatCave Stats
+
+    cpu = psutil.cpu_percent(interval=1)
+
+    load = os.getloadavg()[0]
 
     ram = psutil.virtual_memory().percent
 
     disk = shutil.disk_usage("/")
+
     disk_percent = (disk.used / disk.total) * 100
 
     temp = get_cpu_temp()
 
-    y = 130
 
-    draw.text((20, y), f"CPU Usage : {cpu:.1f}%", fill=0, font=text_font)
-    y += 25
+    uptime = datetime.now() - datetime.fromtimestamp(
+        psutil.boot_time()
+    )
 
-    draw.text((20, y), f"RAM Usage : {ram:.1f}%", fill=0, font=text_font)
-    y += 25
+    days = uptime.days
 
-    draw.text((20, y), f"Disk Usage: {disk_percent:.1f}%", fill=0, font=text_font)
-    y += 25
+    hours, remainder = divmod(
+        uptime.seconds,
+        3600
+    )
+
+    minutes = remainder // 60
+
+
+    stats = [
+        f"CPU      {cpu:.1f}%",
+        f"Load     {load:.2f}",
+        f"RAM      {ram:.1f}%",
+        f"Disk     {disk_percent:.1f}%"
+    ]
+
 
     if temp:
-        draw.text((20, y), f"CPU Temp : {temp:.1f} C", fill=0, font=text_font)
+        stats.append(
+            f"Temp     {temp:.1f} C"
+        )
 
-    os.makedirs("output", exist_ok=True)
 
-    image.save("output/dashboard.png")
+    stats.append(
+        f"Uptime   {days}d {hours}h {minutes}m"
+    )
+
+
+    y = card_y + 50
+
+    for item in stats:
+
+        draw.text(
+            (50, y),
+            item,
+            font=text_font,
+            fill=0
+        )
+
+        y += 28
+
+
+
+    # Weather placeholder
+
+    draw.text(
+        (450, 220),
+        "Coming soon...",
+        font=text_font,
+        fill=0
+    )
+
+
+    os.makedirs(
+        "output",
+        exist_ok=True
+    )
+
+
+    image.save(
+        "output/dashboard.png"
+    )
