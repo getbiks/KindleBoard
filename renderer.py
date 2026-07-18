@@ -3,6 +3,7 @@ from datetime import datetime
 import psutil
 import shutil
 import os
+from widgets.weather import weather_text
 
 
 WIDTH = 800
@@ -32,6 +33,7 @@ def get_cpu_temp():
 
 
 def draw_card(draw, x, y, w, h, title):
+
     draw.rectangle(
         (x, y, x + w, y + h),
         outline=0,
@@ -57,14 +59,12 @@ def render_dashboard():
     draw = ImageDraw.Draw(image)
 
 
-    # Fonts
-
     clock_font = get_font(56)
     date_font = get_font(20)
     text_font = get_font(18)
 
 
-    # Outer border
+    # Border
 
     draw.rectangle(
         (5, 5, WIDTH - 5, HEIGHT - 5),
@@ -104,7 +104,6 @@ def render_dashboard():
         250,
         "BatCave"
     )
-
 
     draw_card(
         draw,
@@ -179,14 +178,25 @@ def render_dashboard():
 
 
 
-    # Weather placeholder
+    # Weather
 
-    draw.text(
-        (450, 220),
-        "Coming soon...",
-        font=text_font,
-        fill=0
-    )
+    weather = weather_text()
+
+    weather_lines = weather.split("\n")
+
+    y = card_y + 60
+
+    for line in weather_lines:
+
+        draw.text(
+            (450, y),
+            line,
+            font=text_font,
+            fill=0
+        )
+
+        y += 30
+
 
 
     os.makedirs(
